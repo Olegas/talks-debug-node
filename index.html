@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Отладка node-приложений</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=792, user-scalable=no">
+	<meta http-equiv="x-ua-compatible" content="ie=edge">
+	<base href="node_modules/shower-ribbon/" />
+	<link rel="stylesheet" href="styles/screen.css">
+	<style>
+		.slide.cover.titleslide {
+			color: white !important;
+			background: #333333 url(/images/node-logo-shadow.png) center center no-repeat;
+		}
+        .slide.cover.titleslide.kerrigan {
+            color: white !important;
+            background: #333333 url(/images/kerrigan.jpg) center center no-repeat;
+        }
+		.titleslide h2 {
+			color: #80BD01;
+		}
+		.titleslide .about {
+			text-align: left;
+			margin-top: 300px;
+		}
+		.full .slide:not(.cover):not(.shout):before,
+		.full .slide.cover.titleslide:before {
+			content: "";
+			display: block;
+			width: 100px;
+			height: 125px;
+			position: absolute;
+			right: 10px;
+			bottom: 15px;
+			background: url(../../images/logo.jpg) no-repeat;
+			background-size: cover;
+		}
+		.about {
+			text-align: right;
+			clear: both;
+		}
+        .notyet {
+            color: gray
+        }
+        .all-the-things {
+            background: white url(/images/debug-all-the-things.png) right bottom no-repeat;
+        }
+	</style>
+</head>
+<body class="list">
+
+	<video id="local" class="video" autoplay muted></video>
+	<video id="remote" class="video" autoplay muted></video>
+	<!--
+		Debug class on <body> enables
+		cyan grid on slides
+		-->
+	<header class="caption">
+		<h1>Отладка node-приложений</h1>
+		<p><a href="mailto:oleg@elifantiev.ru">Олег Елифантьев</a></p>
+	</header>
+
+	<section class="slide cover titleslide"><div>
+		<h2>Отладка Node-приложений</h2>
+		<p class="about">Kostroma Backend Meetup #2<br />Олег Елифантьев, @oelifantiev</p>
+	</div></section>
+
+    <section class="slide cover titleslide kerrigan"><div>
+        <h2>Отладка Node-приложений</h2>
+        <p class="about">Kostroma Backend Meetup #2<br />Олег Елифантьев, @oelifantiev</p>
+    </div></section>
+
+	<section class="slide"><div>
+		<h2>Олег Елифантьев</h2>
+		<p>Компания Тензор, г. Ярославль<br />
+		Веб-разработчик (JavaScript, Node.JS)<br />
+		Организатор <a href="http://yarfrontend.ru/">Yaroslavl Frontend Meetup</a> (http://yarfrontend.ru)<br />
+		<a href="https://twitter.com/oelifantiev">@oelifantiev</a>
+	</div></section>
+
+	<section class="slide shout"><div>
+		<h2>Отладка&hellip;</h2>
+	</div></section>
+
+	<section class="slide all-the-things"><div>
+		<h2>Что нам нужно?</h2>
+		<ul>
+            <li>Видеть состояние переменных</li>
+            <li>Отслеживать ход выполнения программы</li>
+            <li>Остановить выполнение в определенной точке</li>
+            <li>Остановить выполнение при выполнении условия</li>
+            <li>Менять код на лету</li>
+            <li>Отслеживать использование памяти</li>
+            <li>Замерять время выполнения участка кода</li>
+        </ul>
+	</div></section>
+
+    <section class="slide shout"><div>
+        <h2>console!</h2>
+    </div></section>
+
+    <section class="slide"><div>
+        <h2>console.log!</h2>
+        <ul>
+            <li>Видеть состояние переменных</li>
+            <li>Отслеживать ход выполнения программы</li>
+            <li><strike>Остановить выполнение в определенной точке</strike></li>
+            <li><strike>Остановить выполнение при выполнении условия</strike></li>
+            <li><strike>Менять код на лету</strike></li>
+            <li class="notyet">Отслеживать использование памяти</li>
+            <li class="notyet">Замерять время выполнения участка кода</li>
+        </ul>
+    </div></section>
+
+    <section class="slide"><div>
+        <h2>Ход выполнения программы?</h2>
+        <ul>
+            <li>console.trace() &mdash; выводит текущий стэк</li>
+            <li>Прочие инструменты работы со стэком&hellip;</li>
+        </ul>
+    </div></section>
+
+    <section class="slide"><div>
+        <h2>Работа со стэком</h2>
+        <pre><code>var stack = new Error().stack</code></pre>
+        <p>Позволяет захватить в переменную текущий стэк.</p>
+    </div></section>
+
+    <section class="slide"><div>
+        <h2>Работа со стэком</h2>
+        <p>Максимальная глубина захватываемого стэка ограничена по-умолчанию 10 фреймами.</p>
+        <pre><code>Error.stackTraceLimit = Infinity; // снимаем ограничение</code></pre>
+    </div></section>
+
+    <section class="slide"><div>
+        <h2>Работа со стэком</h2>
+        <p>Можно написать свою форматирующую функцию!</p>
+        <pre><code>Error.prepareStackTrace = function(err, stackData) {</code>
+<code>   // stackData - [ CallSite, ... ]</code>
+<code>};</code></pre>
+        <p><a href="https://github.com/v8/v8/wiki/Stack-Trace-API#customizing-stack-traces">https://github.com/v8/v8/wiki/Stack-Trace-API#customizing-stack-traces</a></p>
+    </div></section>
+
+    <section class="slide"><div>
+        <h2>Замер времени исполнения</h2>
+        <pre><code>console.time('hot1');</code>
+<code>// синхронный код, требующий профилирования</code>
+<code>console.timeEnd('hot1')</code>
+        </pre>
+        <pre><code>hot1: 3397.639ms</code></pre>
+    </div></section>
+
+    <section class="slide"><div>
+        <h2>console.time</h2>
+        <p>Проблемы с асинхронным кодом! Могут "пересекаться" замеры</p>
+        <pre><code>console.time('x');</code>
+<code></code>
+<code>setTimeout('console.timeEnd("x")', 100);</code>
+<code>setTimeout('console.timeEnd("x")', 1000);</code>
+<code>x: 100.05ms // одна отметка!</code></pre>
+    </div></section>
+
+    <section class="slide"><div>
+        <h2>Использование памяти</h2>
+        <pre><code>process.memoryUsage()</code></pre>
+        <pre><code>{
+    rss: 4935680,
+    heapTotal: 1826816,
+    heapUsed: 650472
+}</code></pre>
+    </div></section>
+
+    <section class="slide shout"><div>
+        <h2>node debug</h2>
+    </div></section>
+
+    <section class="slide"><div>
+        <h2>node debug</h2>
+        <p>Встроенный консольный отладчик. </p>
+        <a href="https://nodejs.org/dist/latest-v4.x/docs/api/debugger.html">https://nodejs.org/dist/latest-v4.x/docs/api/debugger.html</a>
+    </div></section>
+
+    <section class="slide"><div>
+        <h2>node debug</h2>
+        <ul>
+            <li>Видеть состояние переменных</li>
+            <li>Отслеживать ход выполнения программы</li>
+            <li>Остановить выполнение в определенной точке</li>
+            <li class="notyet">Остановить выполнение при выполнении условия</li>
+            <li class="notyet">Менять код на лету</li>
+            <li class="notyet">Отслеживать использование памяти</li>
+            <li><strike>Замерять время выполнения участка кода</strike></li>
+        </ul>
+    </div></section>
+
+    <section class="slide"><div>
+        <h2>node debug</h2>
+        <pre><code>~/work ∙ node debug
+Usage: node debug script.js
+       node debug host:port
+       node debug -p pid</code></pre>
+    </div></section>
+
+    <section class="slide"><div>
+        <h2>node debug</h2>
+        <p>Для "остановки по условию" можно <code>debugger;</code></p>
+        <pre><code>if (condition) {
+    debugger;
+}</code></pre>
+    </div></section>
+
+    <section class="slide"><div>
+        <h2>node debug</h2>
+        <p>Как менять код на лету?</p>
+        <p>Можно в REPL поменять значение переменной или переопределить функцию</p>
+    </div></section>
+
+    <section class="slide shout"><div>
+        <h2>node-inspector</h2>
+    </div></section>
+
+    <section class="slide"><div>
+        <h2>node-inspector</h2>
+        <p>Полноценный отладчик на основе Chrome DevTools.</p>
+        <a href="https://github.com/node-inspector/node-inspector">https://github.com/node-inspector/node-inspector</a>
+        <pre><code>npm install -g node-inspector</code></pre>
+    </div></section>
+
+    <section class="slide"><div>
+        <h2>node-inspector</h2>
+        <ul>
+            <li>Видеть состояние переменных</li>
+            <li>Отслеживать ход выполнения программы</li>
+            <li>Остановить выполнение в определенной точке</li>
+            <li>Остановить выполнение при выполнении условия</li>
+            <li>Менять код на лету</li>
+            <li>Отслеживать использование памяти</li>
+            <li>Замерять время выполнения участка кода</li>
+        </ul>
+    </div></section>
+
+    <section class="slide"><div>
+        <h2>node-inspector</h2>
+        <pre><code>~/work ∙ node-inspector
+Node Inspector v0.12.7
+Visit http://127.0.0.1:8080/?port=5858 to start debugging.</code></pre>
+    </div></section>
+
+    <section class="slide"><div>
+        <h2>node-inspector</h2>
+        <pre><code>~/work ∙ node-debug server.js
+Node Inspector v0.12.7
+Visit http://127.0.0.1:8080/?port=5858 to start debugging.
+Debugging `server.js`
+
+Debugger listening on port 5858</code></pre>
+    </div></section>
+
+    <section class="slide shout"><div>
+        <h2>Отладка в кластере</h2>
+    </div></section>
+
+    <section class="slide cover"><div>
+        <img src="/images/harold.jpg" />
+    </div></section>
+
+    <section class="slide"><div>
+        <h2>Отладка в кластере</h2>
+        <ol>
+            <li>При старте используйте <code>--debug</code> или <code>--debug-port</code></li>
+            <li>Активируйте отладчик отправкой сигнала USR1 нужному процессу(ам)</li>
+            <li>Подключитесь отладчиком на нужный порт</li>
+        </ol>
+    </div></section>
+
+    <section class="slide"><div>
+        <h2>Отладка в кластере</h2>
+        <p>USR1? А что насчет Windows?</p>
+        <pre><code>&gt; tasklist /FI "IMAGENAME eq node.exe"
+Image Name  PID
+=========== ========
+node.exe    3084
+
+&gt; node -e "process._debugProcess(3084)"</code></pre>
+    </div></section>
+
+
+    <section class="slide"><div>
+        <h2>Нюансы?</h2>
+        <ul>
+            <li>Каждый новый worker увеличивает debug port на 1.</li>
+            <li>Если worker'ы перезапускаются а сам кластер живет долго&hellip;</li>
+            <li>debug port может перевалить через 65535</li>
+            <li class="next">=(</li>
+        </ul>
+    </div></section>
+
+    <section class="slide shout"><div>
+        <h2>Полезности</h2>
+    </div></section>
+
+    <section class="slide"><div>
+        <h2>Полезности</h2>
+        <ul>
+            <li>node-heapdump &mdash; снимает кучу по команде (USR2) или из кода</li>
+            <li class="next">node-profiler &mdash; запуск профайлера из кода (deprecated?)</li>
+            <li class="next">gc-stats &mdash; статистика запуска garbage collector</li>
+            <li class="next">memwatch &mdash; помогает искать утечки (в т.ч. heap diffing)</li>
+        </ul>
+    </div></section>
+
+	<section class="slide">
+		<div>
+			<h2>Спасибо за внимание!</h2>
+			<p>Вопросы?</p>
+			<p class="about">
+				Kostroma Backend Meetup #2<br />
+				Елифантьев Олег, Тензор<br />
+				<a href="https://twitter.com/oelifantiev">@oelifantiev</a>
+			</p>
+		</div>
+	</section>
+
+	<p class="badge"><a href="https://github.com/Olegas/talks-debug-node">Fork me on Github</a></p>
+	<!--
+		To hide progress bar from entire presentation
+		just remove “progress” element.
+		-->
+	<div class="progress"><div></div></div>
+	<script src="../shower-core/shower.min.js"></script>
+</body>
+</html>
