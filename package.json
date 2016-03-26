@@ -9,7 +9,7 @@
   "license": "ISC",
   "dependencies": {
     "http-server": "^0.8.0",
-    "shower-core": "^1.0.7",
-    "shower-ribbon": "^1.0.11"
+    "shower-core": "1.0.7",
+    "shower-ribbon": "1.0.11"
   }
 }
